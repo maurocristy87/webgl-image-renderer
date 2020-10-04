@@ -5,9 +5,10 @@ out vec4 fragColor;
 
 in vec2 texCoords;
 
-uniform sampler2D image;
+uniform sampler2D texImage;
+uniform float alpha;
 
 void main()
 {
-    fragColor = texture(image, texCoords);
+    fragColor = vec4(texture(texImage, texCoords).rgb, alpha);
 }`;

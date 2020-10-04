@@ -34,7 +34,10 @@ const update = (): void => {
     gl.clearColor(0, 0, 0, 1);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    renderer.renderImage(avatarSprite, { x: 0, y: 200 }, 128, 128, null, angle);
+    renderer.renderImage(avatarSprite, { x: -150, y: 200 }, 128, 128, null, angle, 0.25);
+    renderer.renderImage(avatarSprite, { x: -50, y: 200 }, 128, 128, null, -angle, 0.5);
+    renderer.renderImage(avatarSprite, { x: 50, y: 200 }, 128, 128, null, angle, 0.75);
+    renderer.renderImage(avatarSprite, { x: 150, y: 200 }, 128, 128, null, -angle, 1);
 
     renderer.renderImage(playerSprite, { x: -250, y: 0 }, 64, 64, { x: 0, y: 0, width: 32, height: 32 }, 0);
     renderer.renderImage(playerSprite, { x: -150, y: 0 }, 64, 64, { x: 32, y: 0, width: 32, height: 32 }, 0);

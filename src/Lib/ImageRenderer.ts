@@ -18,10 +18,14 @@ export default class ImageRenderer {
     private positionAttr: GLint;
     private texCoordsAttr: GLint;
 
-    // uniforms
+    // vertex uniforms
     private modelMatrixUniform: WebGLUniformLocation;
     private projectionMatrixUniform: WebGLUniformLocation;
     private textureMatrixUniform: WebGLUniformLocation;
+
+    // fragment uniforms
+    private textureUniform: WebGLUniformLocation;
+    private alphaUniform: WebGLUniformLocation;
 
     // matrices
     private projectionMatrix: mat4;
@@ -45,6 +49,9 @@ export default class ImageRenderer {
         this.projectionMatrixUniform = gl.getUniformLocation(this.program, "projectionMatrix");
         this.textureMatrixUniform = gl.getUniformLocation(this.program, "textureMatrix");
 
+        this.textureUniform = gl.getUniformLocation(this.program, "texImage");
+        this.alphaUniform = gl.getUniformLocation(this.program, "alpha");
+
         this.projectionMatrix = mat4.create();
 
         mat4.ortho(
@@ -57,7 +64,9 @@ export default class ImageRenderer {
             1
         );
 
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        this.gl.useProgram(this.program);
+
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
         gl.enable(gl.BLEND);
     }
 
@@ -67,7 +76,8 @@ export default class ImageRenderer {
         width: number,
         height: number,
         slice: { x: number; y: number; width: number; height: number } | null = null,
-        rotation: number = 0
+        rotation: number = 0,
+        alpha: number = 1
     ): void {
         if (this.cache.has(image.src) === false) {
             this.cache.set(image.src, this.textureFactory.create(image));
@@ -98,8 +108,6 @@ export default class ImageRenderer {
             0,
         ]);
 
-        this.gl.useProgram(this.program);
-
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(triangleCoords), this.gl.STATIC_DRAW);
         this.gl.enableVertexAttribArray(this.positionAttr);
@@ -115,8 +123,10 @@ export default class ImageRenderer {
         this.gl.uniformMatrix4fv(this.modelMatrixUniform, false, this.modelMatrix);
         this.gl.uniformMatrix4fv(this.textureMatrixUniform, false, this.textureMatrix);
 
-        this.gl.activeTexture(this.gl.TEXTURE0);
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+        this.gl.uniform1i(this.textureUniform, 0);
+
+        this.gl.uniform1f(this.alphaUniform, alpha);
 
         this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
     }
