@@ -66,8 +66,16 @@ export default class ImageRenderer {
 
         this.gl.useProgram(this.program);
 
-        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_CONSTANT_ALPHA);
-        gl.enable(gl.BLEND);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+
+        const triangleCoords = [-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5];
+        const textureCoords = [0, 1, 1, 1, 0, 0, 1, 0];
+
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(triangleCoords), this.gl.STATIC_DRAW);
+
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(textureCoords), this.gl.STATIC_DRAW);
     }
 
     public renderImage(
@@ -77,6 +85,8 @@ export default class ImageRenderer {
         height: number,
         slice: { x: number; y: number; width: number; height: number } | null = null,
         rotation: number = 0,
+        flipHorizontal: boolean = false,
+        flipVertical: boolean = false,
         alpha: number = 1
     ): void {
         if (this.cache.has(image.src) === false) {
@@ -88,12 +98,14 @@ export default class ImageRenderer {
         }
 
         const texture = this.cache.get(image.src);
-        const triangleCoords = [-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5];
-        const textureCoords = [0, 1, 1, 1, 0, 0, 1, 0];
 
         this.modelMatrix = mat4.create();
         mat4.translate(this.modelMatrix, this.modelMatrix, [position.x, position.y, 0]);
-        mat4.scale(this.modelMatrix, this.modelMatrix, [width, height, 0]);
+        mat4.scale(this.modelMatrix, this.modelMatrix, [
+            width * (flipHorizontal ? -1 : 1),
+            height * (flipVertical ? -1 : 1),
+            0,
+        ]);
         mat4.rotateZ(this.modelMatrix, this.modelMatrix, rotation * (Math.PI / 180));
 
         this.textureMatrix = mat4.create();
@@ -108,20 +120,24 @@ export default class ImageRenderer {
             0,
         ]);
 
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(triangleCoords), this.gl.STATIC_DRAW);
         this.gl.enableVertexAttribArray(this.positionAttr);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionBuffer);
         this.gl.vertexAttribPointer(this.positionAttr, 2, this.gl.FLOAT, false, 0, 0);
 
         //texture
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(textureCoords), this.gl.STATIC_DRAW);
         this.gl.enableVertexAttribArray(this.texCoordsAttr);
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureBuffer);
         this.gl.vertexAttribPointer(this.texCoordsAttr, 2, this.gl.FLOAT, false, 0, 0);
 
         this.gl.uniformMatrix4fv(this.projectionMatrixUniform, false, this.projectionMatrix);
         this.gl.uniformMatrix4fv(this.modelMatrixUniform, false, this.modelMatrix);
         this.gl.uniformMatrix4fv(this.textureMatrixUniform, false, this.textureMatrix);
+
+        if (alpha < 1) {
+            this.gl.enable(this.gl.BLEND);
+        } else {
+            this.gl.disable(this.gl.BLEND);
+        }
 
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
         this.gl.uniform1i(this.textureUniform, 0);

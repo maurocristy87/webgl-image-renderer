@@ -19,6 +19,7 @@ export default class TextureFactory {
 
     private onImageLoaded(image: HTMLImageElement, texture: WebGLTexture) {
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE, image);
 
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);

@@ -10,5 +10,8 @@ uniform float alpha;
 
 void main()
 {
-    fragColor = vec4(texture(texImage, texCoords).rgb, alpha);
+    vec4 texColor = texture(texImage, texCoords);
+    if(texColor.a < 0.0001)
+        discard;
+    fragColor = vec4(texColor.rgb, alpha);
 }`;
