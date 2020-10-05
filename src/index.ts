@@ -29,6 +29,19 @@ avatarSprite.src = "image/demo/avatar.png";
 
 let angle: number = 1;
 
+let playerFrame = 0;
+const playerFrameLength = 6;
+
+const updatePlayerFrame = () => {
+    if (playerFrame === playerFrameLength - 1) {
+        playerFrame = 0;
+    } else {
+        playerFrame++;
+    }
+};
+
+setInterval(updatePlayerFrame, 125);
+
 const update = (): void => {
     // Clear the canvas
     gl.clearColor(0, 0, 0, 1);
@@ -39,12 +52,7 @@ const update = (): void => {
     renderer.renderImage(avatarSprite, { x: -50, y: 200 }, 128, 128, null, -angle, true, false, 0.5);
     renderer.renderImage(avatarSprite, { x: -150, y: 200 }, 128, 128, null, angle, false, false, 0.25);
 
-    renderer.renderImage(playerSprite, { x: -250, y: 0 }, 64, 64, { x: 0, y: 0, width: 32, height: 32 }, 0);
-    renderer.renderImage(playerSprite, { x: -150, y: 0 }, 64, 64, { x: 32, y: 0, width: 32, height: 32 }, 0);
-    renderer.renderImage(playerSprite, { x: -50, y: 0 }, 64, 64, { x: 64, y: 0, width: 32, height: 32 }, 0);
-    renderer.renderImage(playerSprite, { x: 50, y: 0 }, 64, 64, { x: 96, y: 0, width: 32, height: 32 }, 0);
-    renderer.renderImage(playerSprite, { x: 150, y: 0 }, 64, 64, { x: 128, y: 0, width: 32, height: 32 }, 0);
-    renderer.renderImage(playerSprite, { x: 250, y: 0 }, 64, 64, { x: 160, y: 0, width: 32, height: 32 }, 0);
+    renderer.renderImage(playerSprite, { x: 0, y: 0 }, 64, 64, { x: playerFrame * 32, y: 0, width: 32, height: 32 });
     angle++;
 
     window.requestAnimationFrame(update);
